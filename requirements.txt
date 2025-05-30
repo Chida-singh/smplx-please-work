@@ -1,0 +1,8 @@
+streamlit
+numpy
+torch
+smplx
+imageio
+trimesh
+pyrender
+scipy 

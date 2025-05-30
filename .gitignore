@@ -1,0 +1,5 @@
+datasett
+word-level-dataset
+models\smplx\SMPLX_NEUTRAL.npz
+__pycache__
+models

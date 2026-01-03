@@ -3,6 +3,7 @@ numpy
 torch
 smplx
 imageio
+imageio-ffmpeg
 trimesh
 pyrender
-scipy 
+scipy

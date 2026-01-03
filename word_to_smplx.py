@@ -41,14 +41,29 @@ except ImportError:
 
 class WordToSMPLX:
     def __init__(self, model_path="models", gender='neutral', viewport_width=640, viewport_height=480):
-        model_dir = os.path.join(model_path, 'smplx')
-        smplx_subdir = os.path.join(model_dir, 'smplx')
-        model_file = os.path.join(smplx_subdir, f"SMPLX_{gender.upper()}.npz")
-        if not os.path.exists(model_file):
-            raise ValueError(f"Model file not found at: {model_file}")
+        # Locate SMPL-X files (support either models/smplx/*.npz or models/smplx/smplx/*.npz)
+        primary_root = model_path  # expected: models
+        primary_dir = os.path.join(primary_root, 'smplx')  # expected: models/smplx
+        primary_file = os.path.join(primary_dir, f"SMPLX_{gender.upper()}.npz")
+
+        nested_root = primary_dir  # fallback: models/smplx
+        nested_dir = os.path.join(nested_root, 'smplx')  # fallback: models/smplx/smplx
+        nested_file = os.path.join(nested_dir, f"SMPLX_{gender.upper()}.npz")
+
+        if os.path.exists(primary_file):
+            model_root = primary_root  # smplx.create will look in models/smplx
+            model_file = primary_file
+        elif os.path.exists(nested_file):
+            model_root = nested_root  # smplx.create will look in models/smplx/smplx
+            model_file = nested_file
+        else:
+            raise ValueError(
+                f"Model file not found. Checked: {primary_file} and {nested_file}. "
+                "Place SMPL-X .npz/.pkl files under models/smplx/."
+            )
         
         self.smplx_model = smplx.create(
-            model_path=model_dir,
+            model_path=model_root,
             model_type='smplx',
             gender=gender,
             use_pca=False,  # Disable PCA to allow full finger control for sign language
@@ -239,6 +254,11 @@ if __name__ == "__main__":
         
         animator.render_animation(pose_data, save_path=output_path, fps=15)
         print(f"Animation saved to: {output_path}")
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         
     except Exception as e:
         print(f"Error: {e}")
